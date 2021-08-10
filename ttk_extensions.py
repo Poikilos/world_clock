@@ -18,10 +18,13 @@ class DropDown(ttk.OptionMenu):
     def get(self):
         return self.var.get()
 
-    def set(self, value: str):
+
+    def set(self, value):
+        # formerly `, value: str`
         self.var.set(value)
 
-    def add_callback(self, callback: callable):
+    def add_callback(self, callback):
+        # formerly `, callback: callable`
         def internal_callback(*args):
             callback()
 
