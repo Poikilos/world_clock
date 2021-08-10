@@ -6,10 +6,46 @@
 
 from datetime import datetime
 import pytz
-import tkinter as tk
+# import tkinter as tk
 import yaml
+
+python_revision = 2
+try:
+    import Tkinter as tk
+    import ttk
+    print("* using Python 2 ttk")
+except ImportError as ex2:
+    python_revision = 3
+    # python 3
+    # Make this the exception since `import tkinter as tk` works in
+    # recent versions of Python 2 but the other features do not.
+    print("* using Python 3 ttk")
+    try:
+        import tkinter as tk
+        # import tkinter.ttk as ttk
+        from tkinter import ttk
+        from ttkthemes import ThemedTk
+    except ImportError as ex3:
+        print()
+        print("ERROR: Tk is not present."
+              " Try installing python-tk or python3-tk")
+        print()
+        print()
+        exit(1)
+'''
 from tkinter import ttk
-from ttkthemes import ThemedTk
+try:
+    from ttkthemes import ThemedTk
+except ImportError:
+    # python2
+    pass
+    # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
+'''
+
+# s=ttk.Style()
+# print("theme names: {}".format(s.theme_names()))
+# ^ theme names: ('clam', 'alt', 'default', 'classic')
+
 from ttk_extensions import AutocompleteEntry, DropDown, matches
 import platform
 import os
@@ -245,7 +281,11 @@ def change_text(app):
         tzStr = thisZone.get('tz')
         try:
             thisZone = pytz.timezone(tzStr)
-            thisTimeStr = datetime.now(thisZone).strftime(f"%I:%M{':%S' if show_seconds else ''} %p")
+            timeFmt = "%I:%M %p"
+            if show_seconds:
+                timeFmt = "%I:%M:%S %p"
+            # timeFmt = f"%I:%M{':%S' if show_seconds else ''} %p"
+            thisTimeStr = datetime.now(thisZone).strftime(timeFmt)
             app.timeLabels[i].delete(0, tk.END)
             app.timeLabels[i].insert(0, thisTimeStr)
         except pytz.UnknownTimeZoneError:
@@ -277,15 +317,38 @@ def change_text(app):
 
 
 if __name__ == '__main__':
-    root = ThemedTk(themebg=True)
-    app = WorldClock(master=root)
-    root.set_theme('equilux')
+    if python_revision == 3:
+        root = ThemedTk(themebg=True)
+        app = WorldClock(master=root)
+        root.set_theme('equilux')
+    else:
+        # Python 2
+        root = tk.Tk()
+        app = WorldClock(master=root)
+        app.style = ttk.Style(root)
+        names = app.style.theme_names()
+        styleI = 1
+        print("* theme names: {}".format(names))
+        app.style.theme_use(names[1])
+        print("  * using style: {}".format(names[styleI]))
+        # They all look the same, like RedHat circa 1998,
+        # but are better than setting no
+        # style which uses the old x11-style dent instead of an arrow
+        # for drop-down boxes:
+        # [0] clam
+        # [1] alt
+        # [2] default
+        # [3] classic
+
     if platform.system() == "Windows":
         root.iconbitmap(r'clock_mini_icon.ico')
     else:
         iconPath = os.path.realpath('clock_mini_icon.png')
         img = tk.Image("photo", file=iconPath)
-        root.tk.call('wm', 'iconphoto', root._w, img)
+        try:
+            root.tk.call('wm', 'iconphoto', root._w, img)
+        except tk.TclError as ex:
+            print(str(ex))
 
     change_text(app)
     root.mainloop()
