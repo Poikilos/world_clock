@@ -4,7 +4,7 @@
 -Kaveh Tehrani
 """
 
-import datetime
+from datetime import datetime
 import pytz
 import tkinter as tk
 import yaml
@@ -245,7 +245,7 @@ def change_text(app):
         tzStr = thisZone.get('tz')
         try:
             thisZone = pytz.timezone(tzStr)
-            thisTimeStr = datetime.datetime.now(thisZone).strftime(f"%I:%M{':%S' if show_seconds else ''} %p")
+            thisTimeStr = datetime.now(thisZone).strftime(f"%I:%M{':%S' if show_seconds else ''} %p")
             app.timeLabels[i].delete(0, tk.END)
             app.timeLabels[i].insert(0, thisTimeStr)
         except pytz.UnknownTimeZoneError:
