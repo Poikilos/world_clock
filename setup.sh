@@ -49,24 +49,33 @@ if [ $? -eq 0 ]; then
 else
     echo "FAILED"
 fi
-THIS_PYTHON=python3
+THIS_PYTHON_NAME=python3
+THIS_PYTHON=/usr/bin/python3
 if [ ! -f "`command -v python3`" ]; then
     echo "Warning: this program requires python3."
     if [ -f "`command -v python`" ]; then
-        THIS_PYTHON=python
+        THIS_PYTHON_NAME=python
+        THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
         echo "* The Python binary for the icon was set to \"$THIS_PYTHON\"."
     fi
+else
+    THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
 fi
 #if [ ! -d "$shortcuts_dir" ]; then
 mkdir -p "$shortcuts_dir"
 #fi
 sc_path="$shortcuts_dir/world_clock.desktop"
+# NOTE: If the program becomes a module, maybe do what sunflower does
+# and prepend a line such as:
+# #!/usr/bin/env python3 -m world_clock
+# and change Exec to world_clock %U
 cat > "$sc_path" <<END
 [Desktop Entry]
 Name=World Clock
 Exec=$THIS_PYTHON $dst_path/$main_script
+Path=$dst_path
 Icon=$dst_path/clock_mini_icon.png
-Terminal=true
+Terminal=false
 Type=Application
 END
 printf "* chmod +x \"$sc_path\"..."
