@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 "Wrote this since Win10 only allows two native clocks and the world clock app is too massive"
 -Kaveh Tehrani
