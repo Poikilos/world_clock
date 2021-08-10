@@ -181,7 +181,7 @@ class WorldClock:
             self.timeLabels[i].grid(row=i, column=2, columnspan=1)
             self.timeLabels[i].bind("<Key>", lambda e: "break")
 
-            self.captionEntries.append(ttk.Entry(self.frame))
+            self.captionEntries.append(ttk.Entry(self.frame, width=50))
             if i < len(self.zones):
                 self.captionEntries[i].delete(0, tk.END)
                 self.captionEntries[i].insert(0, self.getCaptionSafely(i))
