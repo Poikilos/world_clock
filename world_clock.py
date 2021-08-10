@@ -16,6 +16,8 @@ import os
 
 
 class WorldClock:
+    show_tz_names = True
+
     def __init__(self, master, l_tz=None, num_max_clocks=20):
         self.master = master
         self.master.title('Clock')
@@ -24,7 +26,15 @@ class WorldClock:
         self.load_config()
         if not self.wc_config:
             if not l_tz:
-                self.l_tz = ['US/Eastern', 'Europe/London', 'Asia/Tehran']
+                self.l_tz = [
+                    {
+                        'tz': 'US/Eastern',
+                    },
+                    {
+                        'tz': 'US/Pacific',
+                        'caption': 'California'
+                    },
+                ]
                 self.b_show_seconds = tk.BooleanVar(value=True)
 
         self.num_max_clocks = num_max_clocks
@@ -34,27 +44,45 @@ class WorldClock:
         self.frame.pack()
         self.create_clocks()
 
+    def getTzSafely(self, index):
+        result = self.l_tz[index].get('tz')
+        if result is None:
+            result = ""
+        return result
+
+    def getCaptionSafely(self, index):
+        result = self.l_tz[index].get('caption')
+        if result is None:
+            result = ""
+        return result
+
     def create_clocks(self):
         """
         Create the GUI
         """
         self.l_entries = []
+        self.captionEntries = []
         self.l_dd = []
         for i in range(self.num_clocks):
             self.l_dd.append(AutocompleteEntry(pytz.all_timezones, self.frame, listboxLength=4, width=20, matchesFunction=matches))
             self.l_dd[i].var.set(pytz.all_timezones[0])
             if i < len(self.l_tz):
                 self.l_dd[i].delete(0, tk.END)
-                self.l_dd[i].insert(0, self.l_tz[i])
+                self.l_dd[i].insert(0, self.getTzSafely(i))
             self.l_dd[i].listbox.destroy()
-
             self.l_dd[i].grid(row=i, column=0, columnspan=2)
 
             self.l_entries.append(ttk.Entry(self.frame))
             self.l_entries[i].grid(row=i, column=2, columnspan=1)
             self.l_entries[i].bind("<Key>", lambda e: "break")
 
-        self.bt_update = ttk.Button(self.frame, text="Update", command=self.redesign_clocks)
+            self.captionEntries.append(ttk.Entry(self.frame))
+            if i < len(self.l_tz):
+                self.captionEntries[i].delete(0, tk.END)
+                self.captionEntries[i].insert(0, self.getCaptionSafely(i))
+            self.captionEntries[i].grid(row=i, column=3, columnspan=1)
+
+        self.bt_update = ttk.Button(self.frame, text="Apply", command=self.redesign_clocks)
         self.bt_update.grid(row=i + 1, column=0, columnspan=1)
         self.dd_num_clocks = DropDown(self.frame, range(1, self.num_max_clocks + 1), self.num_clocks)
         self.dd_num_clocks.grid(row=i + 1, column=1, columnspan=1)
@@ -78,8 +106,8 @@ class WorldClock:
         """
         try:
             self.wc_config = yaml.safe_load(open(r'world_clock.yaml'))
-            self.l_tz = self.wc_config['l_tz']
-            self.b_show_seconds = tk.BooleanVar(value=self.wc_config['b_seconds'])
+            self.l_tz = self.wc_config['zones']
+            self.b_show_seconds = tk.BooleanVar(value=self.wc_config['show_seconds'])
         except FileNotFoundError:
             self.wc_config = {}
 
@@ -87,7 +115,7 @@ class WorldClock:
         """
         Save current state
         """
-        wc_config = {'l_tz': self.l_tz, 'b_seconds': self.b_show_seconds.get()}
+        wc_config = {'zones': self.l_tz, 'show_seconds': self.b_show_seconds.get()}
 
         with open(r'world_clock.yaml', 'w') as config_file:
             yaml.dump(wc_config, config_file)
@@ -98,15 +126,25 @@ def change_text(app):
     Takes our GUI and updates it for the time zones
     """
     b_seconds = app.b_show_seconds.get()
-    app.l_tz = [x.var.get() for x in app.l_dd]
-    for i, str_tz in enumerate(app.l_tz):
+    app.l_tz = []
+    for i in range(len(app.l_dd)):
+        app.l_tz.append(
+            {
+                'tz': app.l_dd[i].var.get(),
+                'caption': app.captionEntries[i].get(),
+            },
+        )
+    for i, thisZone in enumerate(app.l_tz):
         try:
+            str_tz = thisZone.get('tz')
             cur_zone = pytz.timezone(str_tz)
             cur_time = datetime.datetime.now(cur_zone).strftime(f"%I:%M{':%S' if b_seconds else ''} %p")
             app.l_entries[i].delete(0, tk.END)
             app.l_entries[i].insert(0, cur_time)
         except pytz.UnknownTimeZoneError:
-            pass
+            if WorldClock.show_tz_names:
+                WorldClock.show_tz_names = False
+                print("Valid timezones: {}".format(pytz.all_timezones))
 
     app.save_config()
 
