@@ -150,7 +150,7 @@ class WorldClock:
         self.master = master
         self.isShowingHint = False
         self.hintLabel = None
-        self.master.title('Clock')
+        self.master.title('World Clock')
 
         # load last preset, otherwise load defaults
         self.loadConfig()
