@@ -13,6 +13,98 @@ from ttkthemes import ThemedTk
 from ttk_extensions import AutocompleteEntry, DropDown, matches
 import platform
 import os
+try:
+    from tkinter import messagebox
+except ImportError:
+    # Python 2
+    import tkMessageBox as messagebox
+
+
+autocompletions = {}
+
+
+def append_completion(criteria, timezone):
+    criteria = criteria.lower().strip()
+    tmp = autocompletions.get(criteria)
+    if tmp is None:
+        autocompletions[criteria] = []
+    autocompletions[criteria].append(timezone)
+
+
+append_completion("India", "Asia/Kolkata")
+append_completion("Kolkata", "Asia/Kolkata")
+append_completion("Mumbai", "Asia/Kolkata")
+append_completion("New Delhi", "Asia/Kolkata")
+append_completion("Delhi", "Asia/Kolkata")
+append_completion("Yemen", "Asia/Aden")
+append_completion("New York", "US/Eastern")
+append_completion("Honolulu", "US/Hawaii")
+append_completion("Knox", "US/Indiana-Starke")
+append_completion("Indiana", "US/Indiana-Starke")
+append_completion("Chicago", "US/Central")
+append_completion("Detroit", "US/Eastern")
+append_completion("Mountain", "US/Mountain")
+append_completion("Pacific", "US/Pacific")
+append_completion("Samoa", "US/Samoa")
+append_completion("GMT", "Etc/Greenwich")  # or "UTC" or "Etc/GMT0"
+append_completion("Oahu", "US/Hawaii")
+append_completion("Waikiki", "US/Hawaii")
+append_completion("Finland", "Europe/Helsinki")
+
+
+# "Etc/GMT+0" to "Etc/GMT+12" are valid:
+for i in range(13):
+    append_completion("GMT+{}".format(i), "Etc/GMT+{}".format(i))
+
+
+# "Etc/GMT-0" to "Etc/GMT-14" are valid:
+for i in range(15):
+    append_completion("GMT-{}".format(i), "Etc/GMT-{}".format(i))
+
+
+def get_timezones(criteria):
+    '''
+    Sequential arguments:
+    criteria -- Provide a search term such as a country or city (case
+                insensitive).
+    '''
+    got = autocompletions.get(criteria.lower())
+    if got is None:
+        got = []
+    for name in pytz.all_timezones:
+        # Also find similar ones not in autocompletions:
+        if criteria.lower() in name.lower():
+            if name not in got:
+                got.append(name)
+    if len(got) == 0:
+        got = None
+    return got
+
+
+def list_to_english(l, sep=", ", last_sep=" or "):
+    '''
+    Get a list as a series of quoted elements with commas and "or",
+    otherwise None if the list is None.
+    '''
+    if l is None:
+        return None
+    result = ""
+    for i in range(len(l)):
+        if i == (len(l)-1):
+            result += last_sep
+        else:
+            result += sep
+        result += '"{}"'.format(l[i])
+    return result
+
+
+def english_timezones_list(criteria, sep=", ", last_sep=" or "):
+    '''
+    Get matching timezones as a series of quoted elements with commas
+    and "or".
+    '''
+    return list_to_english(get_timezones(criteria), sep=sep,
+                           last_sep=last_sep)
 
 
 class WorldClock:
@@ -20,6 +112,8 @@ class WorldClock:
 
     def __init__(self, master, l_tz=None, num_max_clocks=20):
         self.master = master
+        self.showing_hint = False
+        self.hintLabel = None
         self.master.title('Clock')
 
         # load last preset, otherwise load defaults
@@ -43,6 +137,17 @@ class WorldClock:
         self.frame = ttk.Frame()
         self.frame.pack()
         self.create_clocks()
+
+    def showHint(self, hint):
+        if self.hintLabel is None:
+            self.hintLabel = ttk.Label(self.master, text=hint)
+        if not self.showing_hint:
+            self.hintLabel.pack()
+        self.showing_hint = True
+
+    def hideHint(self):
+        if self.showing_hint:
+            self.hintLabel.pack_forget()
 
     def getTzSafely(self, index):
         result = self.l_tz[index].get('tz')
@@ -89,6 +194,7 @@ class WorldClock:
 
         self.ck_seconds = ttk.Checkbutton(self.frame, text="Show Seconds", variable=self.b_show_seconds)
         self.ck_seconds.grid(row=i + 1, column=2, columnspan=1)
+        change_text(self)
 
     def redesign_clocks(self):
         """
@@ -134,18 +240,36 @@ def change_text(app):
                 'caption': app.captionEntries[i].get(),
             },
         )
+    any_hint = False
     for i, thisZone in enumerate(app.l_tz):
+        str_tz = thisZone.get('tz')
         try:
-            str_tz = thisZone.get('tz')
             cur_zone = pytz.timezone(str_tz)
             cur_time = datetime.datetime.now(cur_zone).strftime(f"%I:%M{':%S' if b_seconds else ''} %p")
             app.l_entries[i].delete(0, tk.END)
             app.l_entries[i].insert(0, cur_time)
         except pytz.UnknownTimeZoneError:
+            app.l_entries[i].delete(0, tk.END)
+            app.l_entries[i].insert(0, "")
+            matchingListStr = None
+            if len(str_tz) > 2:
+                matchingListStr = english_timezones_list(
+                    str_tz,
+                    sep="\n",
+                    last_sep="\n",
+                )
+            if matchingListStr is not None:
+                any_hint = True
+                hint = ("for {} maybe you mean:\n{}"
+                        "".format(str_tz, matchingListStr))
+                app.showHint(hint)
+            elif len(str_tz.strip()) > 0:
+                print("There is no hint for {}".format(str_tz))
             if WorldClock.show_tz_names:
                 WorldClock.show_tz_names = False
                 print("Valid timezones: {}".format(pytz.all_timezones))
-
+    if not any_hint:
+        app.hideHint()
     app.save_config()
 
     # update clocks every second if showing seconds, every 10 seconds otherwise to reduce cpu load
