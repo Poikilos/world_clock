@@ -331,14 +331,16 @@ if __name__ == '__main__':
         print("* theme names: {}".format(names))
         app.style.theme_use(names[1])
         print("  * using style: {}".format(names[styleI]))
-        # They all look the same, like RedHat circa 1998,
-        # but are better than setting no
-        # style which uses the old x11-style dent instead of an arrow
-        # for drop-down boxes:
-        # [0] clam
-        # [1] alt
-        # [2] default
-        # [3] classic
+        '''
+        See <https://www.pythontutorial.net/tkinter/tkinter-theme/> but
+        they all look the same, like RedHat circa 1998, but are better
+        than setting no style which uses the old x11-style dent instead
+        of an arrow for drop-down boxes:
+        [0] clam
+        [1] alt
+        [2] default
+        [3] classic
+        '''
 
     if platform.system() == "Windows":
         root.iconbitmap(r'clock_mini_icon.ico')
