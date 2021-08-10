@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 """
-Wrote this since Win10 only allows two native clocks and the world clock app is too massive
-
-Kaveh Tehrani
+"Wrote this since Win10 only allows two native clocks and the world clock app is too massive"
+-Kaveh Tehrani
 """
 
 import datetime
