@@ -6,6 +6,7 @@ basePath="`dirname "$myPath"`"
 echo "basePath: $basePath"
 programs_path="$HOME/.local/lib"
 this_module="worldclocktk"
+this_package="world_clock"
 dst_path="$programs_path/world_clock"
 mkdir -p "$dst_path"
 if [ $? -ne 0 ]; then exit 1; fi
@@ -28,6 +29,7 @@ if [ ! -f "$main_script_path" ]; then
 Error: The world_clock command is not installed yet.
 You must first run:
   python3 -m pip install $REPO_DIR
+  # ^ installs the $this_package package which provides the $this_module module.
 
 END
     exit 1
@@ -38,13 +40,28 @@ if [ -d "$this_module" ]; then
     rm -Rf "$this_module"
 fi
 # ^ Change the directory & delete any present so the check below works.
-python3 -c "import $this_module"
+
+THIS_PYTHON_NAME=python3
+THIS_PYTHON="`command -v python3`"
+if [ ! -f "$THIS_PYTHON" ]; then
+    echo "Warning: this program requires python3."
+    if [ -f "`command -v python`" ]; then
+        THIS_PYTHON_NAME=python
+        THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
+        echo "* The Python binary for the icon was set to \"$THIS_PYTHON\"."
+    fi
+else
+    THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
+fi
+THIS_PYTHON_NAME="`basename $THIS_PYTHON`"
+
+$THIS_PYTHON -c "import $this_module" >& /dev/null
 if [ $? -ne 0 ]; then
     cat <<END
 
 Error: The $this_package package is not installed yet.
-You must first run:
-  python3 -m pip install $REPO_DIR
+You must first run something like:
+  $THIS_PYTHON -m pip install $REPO_DIR
 
 END
     exit 1
@@ -79,18 +96,7 @@ done
 END
 
 echo "* generating shortcut..."
-THIS_PYTHON_NAME=python3
-THIS_PYTHON="`command -v python3`"
-if [ ! -f "$THIS_PYTHON" ]; then
-    echo "Warning: this program requires python3."
-    if [ -f "`command -v python`" ]; then
-        THIS_PYTHON_NAME=python
-        THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
-        echo "* The Python binary for the icon was set to \"$THIS_PYTHON\"."
-    fi
-else
-    THIS_PYTHON="`command -v $THIS_PYTHON_NAME`"
-fi
+
 #if [ ! -d "$shortcuts_dir" ]; then
 mkdir -p "$shortcuts_dir"
 #fi
