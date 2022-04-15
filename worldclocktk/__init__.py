@@ -9,6 +9,25 @@ import pytz
 # import tkinter as tk
 import yaml
 
+import platform
+import os
+
+try:
+    from tkinter import messagebox
+except ImportError:
+    # Python 2
+    import tkMessageBox as messagebox
+
+ttkError = '''
+ERROR: Tk is not present.
+ Try installing python-tk or python3-tk
+
+# If you still get an error, try:
+python3 -m pip install ttkthemes
+# See also:
+# <https://stackoverflow.com/questions/66233714/installation-of-ttk-themes-for-tkinter>
+
+'''
 python_revision = 2
 try:
     import Tkinter as tk
@@ -28,18 +47,15 @@ except ImportError as ex2:
         # ^ ImportError: No module named ttkthemes (Python2 or 3)
     except ImportError as ex3:
         print()
-        print(str(ex3))
-        print("ERROR: Tk is not present."
-              " Try installing python-tk or python3-tk")
-        print()
-        print("# If you still get an error, try:")
-        print("python3 -m pip install ttkthemes")
-        print("# See also:")
-        print("# <https://stackoverflow.com/questions/66233714/installation-of-ttk-themes-for-tkinter>")
-        print()
-        print()
+        ttkError = str(ex3) + "\n" + ttkError
+        try:
+            messagebox.showerror("Error", ttkError)
+        except:
+            pass
+        print(ttkError)
         # raise ex3
         exit(1)
+
 '''
 from tkinter import ttk
 try:
@@ -53,16 +69,30 @@ except ImportError:
 # s=ttk.Style()
 # print("theme names: {}".format(s.theme_names()))
 # ^ theme names: ('clam', 'alt', 'default', 'classic')
+ttkExtError = "ttk_extensions.py should be in the worldclocktk module."
+try:
+    from worldclocktk.ttk_extensions import (
+        AutocompleteEntry,
+        DropDown,
+        matches,
+    )
+except ModuleNotFoundError as ex:
+    print(str(ex))
+    messagebox.showerror("Error", ttkExtError)
+    # print(ttkExtError)
+    exit(1)
 
-from ttk_extensions import AutocompleteEntry, DropDown, matches
-import platform
-import os
 try:
     from tkinter import messagebox
 except ImportError:
     # Python 2
     import tkMessageBox as messagebox
 
+myDir = os.path.dirname(os.path.abspath(__file__))
+repoDir = os.path.dirname(myDir)
+assetsDir = os.path.join(myDir, "assets")
+iconPngPath = os.path.join(assetsDir, "clock_mini_icon.png")
+iconIcoPath = os.path.join(assetsDir, "clock_mini_icon.ico")
 
 autocompletions = {}
 
@@ -323,8 +353,10 @@ def change_text(app):
     # update clocks every second if showing seconds, every 10 seconds otherwise to reduce cpu load
     root.after(1000 if show_seconds else 10000, change_text, app)
 
+root = None
 
-if __name__ == '__main__':
+def main():
+    global root
     if python_revision == 3:
         root = ThemedTk(themebg=True)
         app = WorldClock(master=root)
@@ -351,9 +383,11 @@ if __name__ == '__main__':
         '''
 
     if platform.system() == "Windows":
-        root.iconbitmap(r'clock_mini_icon.ico')
+        # root.iconbitmap(r'clock_mini_icon.ico')
+        root.iconbitmap(iconIcoPath)
     else:
-        iconPath = os.path.realpath('clock_mini_icon.png')
+        # iconPath = os.path.realpath('clock_mini_icon.png')
+        iconPath = iconPngPath
         img = tk.Image("photo", file=iconPath)
         try:
             root.tk.call('wm', 'iconphoto', root._w, img)
@@ -362,3 +396,6 @@ if __name__ == '__main__':
 
     change_text(app)
     root.mainloop()
+
+if __name__ == '__main__':
+    main()
