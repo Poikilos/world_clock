@@ -97,5 +97,10 @@ else
     echo "* The icon is in $sc_path."
     echo "  * The xdg-desktop-icon command was not present so the icon install was skipped: xdg-desktop-icon install --novendor \"$sc_path\""
 fi
-echo "* Setup is complete."
+$THIS_PYTHON -m pip install --user ttkthemes
+if [ $? -ne 0 ]; then
+    echo "Error: '$THIS_PYTHON -m pip install --user ttkthemes' Failed. You will have to install ttkthemes."
+else
+    echo "* Setup is complete."
+fi
 echo

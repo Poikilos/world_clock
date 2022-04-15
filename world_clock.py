@@ -25,12 +25,20 @@ except ImportError as ex2:
         # import tkinter.ttk as ttk
         from tkinter import ttk
         from ttkthemes import ThemedTk
+        # ^ ImportError: No module named ttkthemes (Python2 or 3)
     except ImportError as ex3:
         print()
+        print(str(ex3))
         print("ERROR: Tk is not present."
               " Try installing python-tk or python3-tk")
         print()
+        print("# If you still get an error, try:")
+        print("python3 -m pip install ttkthemes")
+        print("# See also:")
+        print("# <https://stackoverflow.com/questions/66233714/installation-of-ttk-themes-for-tkinter>")
         print()
+        print()
+        # raise ex3
         exit(1)
 '''
 from tkinter import ttk
