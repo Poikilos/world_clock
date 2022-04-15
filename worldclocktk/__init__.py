@@ -453,9 +453,12 @@ def change_text(app):
     root.after(1000 if show_seconds else 10000, change_text, app)
 
 root = None
+app = None
+
 
 def main():
     global root
+    global app
     if python_revision == 3:
         root = ThemedTk(themebg=True)
         app = WorldClock(master=root)

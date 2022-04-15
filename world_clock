@@ -2,7 +2,15 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
+import os
+
+if os.path.isdir("worldclocktk"):
+    thisModPath = os.path.realpath("worldclocktk")
+    print("* using {}...".format(thisModPath))
+    sys.path.insert(0, thisModPath)
+
 from worldclocktk import main
+
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
