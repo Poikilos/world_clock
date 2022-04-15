@@ -1,57 +1,87 @@
 #!/bin/bash
+echo
 myPath="`realpath "$0"`"
 echo "$myPath"
 basePath="`dirname "$myPath"`"
-echo "$basePath"
+echo "basePath: $basePath"
 programs_path="$HOME/.local/lib"
+this_module="worldclocktk"
 dst_path="$programs_path/world_clock"
-mkdir -p "$programs_path"
-main_script="world_clock.py"
-good_flag_file="$main_script"
+mkdir -p "$dst_path"
+if [ $? -ne 0 ]; then exit 1; fi
+icon_name="clock_mini_icon.png"
+src_icon_path="worldclocktk/assets/$icon_name"
+dst_icon_path="$dst_path/$icon_name"
+# good_flag_file="worldclocktk/__init__.py"
+good_flag_file="$src_icon_path"
 shortcuts_dir="$HOME/.local/share/applications"
 if [ ! -f "$good_flag_file" ]; then
     echo "Error: This script must run from the directory containing $good_flag_file."
     exit 1
 fi
-if [ "@$basePath" = "@$dst_path" ]; then
-    echo "The program is already installed."
-else
-    if [ ! -d "$dst_path" ]; then
-        if [ ! -d "$programs_path" ]; then
-            echo "This setup script requires $programs_path to exist."
-            exit 1
-        fi
-        echo "* installing \"$dst_path\"..."
-        cp -R "$basePath" $programs_path/
-        if [ $? -eq 0 ]; then
-            echo "  * installing...OK"
-        else
-            echo "  * installing...FAILED"
-        fi
-    else
-        if [ ! -f "`command -v rsync`" ]; then
-            echo "Error: upgrading is only available if you first install rsync."
-            exit 1
-        fi
-        echo "* upgrading \"$dst_path\"..."
-        rsync -rt "$basePath/" "$dst_path"
-        if [ $? -eq 0 ]; then
-            echo "  * upgrading...OK"
-        else
-            echo "  * upgrading...FAILED"
-        fi
+REPO_DIR="`pwd`"
+# ^ Only set REPO_DIR if good (confirmed above, else exits).
+main_script_path="`command -v world_clock`"
+if [ ! -f "$main_script_path" ]; then
+    cat <<END
+
+Error: The world_clock command is not installed yet.
+You must first run:
+  python3 -m pip install $REPO_DIR
+
+END
+    exit 1
+fi
+cd /tmp
+if [ $? -ne 0 ]; then exit 1; fi
+if [ -d "$this_module" ]; then
+    rm -Rf "$this_module"
+fi
+# ^ Change the directory & delete any present so the check below works.
+python3 -c "import $this_module"
+if [ $? -ne 0 ]; then
+    cat <<END
+
+Error: The $this_package package is not installed yet.
+You must first run:
+  python3 -m pip install $REPO_DIR
+
+END
+    exit 1
+fi
+cd "$REPO_DIR"
+if [ $? -ne 0 ]; then exit 1; fi
+# printf "* chmod +x \"$dst_path/$main_script\"..."
+# chmod +x "$dst_path/$main_script"
+#if [ $? -eq 0 ]; then
+#    echo "OK"
+#else
+#    echo "FAILED"
+#fi
+printf "* installing $dst_icon_path..."
+cp -f "$src_icon_path" "$dst_icon_path"
+if [ $? -ne 0 ]; then exit 1; fi
+echo "OK"
+
+cat > /dev/null <<END
+for srcName in license.txt readme.md
+do
+    this_dst_file_path="$dst_path/$srcName"
+    printf "* installing $this_dst_file_path..."
+    if [ ! -f "$srcName" ]; then
+        echo "Error: $srcName is missing from `pwd`"
+        exit 1
     fi
-fi
-printf "* chmod +x \"$dst_path/$main_script\"..."
-chmod +x "$dst_path/$main_script"
-if [ $? -eq 0 ]; then
+    cp -f "$srcName" "$this_dst_file_path"
+    if [ $? -ne 0 ]; then exit 1; fi
     echo "OK"
-else
-    echo "FAILED"
-fi
+done
+END
+
+echo "* generating shortcut..."
 THIS_PYTHON_NAME=python3
-THIS_PYTHON=/usr/bin/python3
-if [ ! -f "`command -v python3`" ]; then
+THIS_PYTHON="`command -v python3`"
+if [ ! -f "$THIS_PYTHON" ]; then
     echo "Warning: this program requires python3."
     if [ -f "`command -v python`" ]; then
         THIS_PYTHON_NAME=python
@@ -72,12 +102,13 @@ sc_path="$shortcuts_dir/world_clock.desktop"
 cat > "$sc_path" <<END
 [Desktop Entry]
 Name=World Clock
-Exec=$THIS_PYTHON $dst_path/$main_script
+Exec=$main_script_path
 Path=$dst_path
-Icon=$dst_path/clock_mini_icon.png
+Icon=$dst_icon_path
 Terminal=false
 Type=Application
 END
+# ^ formerly Exec=$THIS_PYTHON $main_script_path
 printf "* chmod +x \"$sc_path\"..."
 chmod +x "$sc_path"
 if [ $? -eq 0 ]; then
@@ -97,7 +128,8 @@ else
     echo "* The icon is in $sc_path."
     echo "  * The xdg-desktop-icon command was not present so the icon install was skipped: xdg-desktop-icon install --novendor \"$sc_path\""
 fi
-$THIS_PYTHON -m pip install --user ttkthemes
+# $THIS_PYTHON -m pip install --user ttkthemes
+# ^ should already be done. Run setup first as noted in error above if necessary.
 if [ $? -ne 0 ]; then
     echo "Error: '$THIS_PYTHON -m pip install --user ttkthemes' Failed. You will have to install ttkthemes."
 else

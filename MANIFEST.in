@@ -1,0 +1,2 @@
+include worldclocktk/assets/*
+include worldclocktk/*.py
