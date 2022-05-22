@@ -14,6 +14,24 @@ import yaml
 import platform
 import os
 import shutil
+import copy
+
+verbose = False
+
+for i in range(1, len(sys.argv)):
+    arg = sys.argv[i]
+    if arg == "--verbose":
+        verbose = True
+
+
+def error(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
+def debug(*args, **kwargs):
+    if verbose:
+        print(*args, file=sys.stderr, **kwargs)
+
 
 python_mr = sys.version_info.major
 if python_mr >= 3:  # try:
@@ -293,12 +311,13 @@ class WorldClock:
         self.master = master
         self.isShowingHint = False
         self.hintLabel = None
+        self.savedConfig = None
         self.master.title('World Clock')
 
         # load last preset, otherwise load defaults
         self.loadConfig()
         if not self.config:
-            if not zones:
+            if not self.zones:
                 self.zones = [
                     {
                         'tz': 'US/Eastern',
@@ -308,7 +327,7 @@ class WorldClock:
                         'caption': 'California'
                     },
                 ]
-                self.showSeconds = tk.BooleanVar(value=True)
+            self.showSeconds = tk.BooleanVar(value=True)
 
         self.maxClockCount = maxClockCount
         self.clockCount = len(self.zones)
@@ -393,17 +412,23 @@ class WorldClock:
             self.config = yaml.safe_load(open(yamlPath))
             self.zones = self.config['zones']
             self.showSeconds = tk.BooleanVar(value=self.config['show_seconds'])
-        except FileNotFoundError:
+        except FileNotFoundError as ex:
             self.config = {}
+            debug(str(ex))
+        self.savedConfig = copy.deepcopy(self.config)
+
+    def readGUI(self):
+        self.config = {'zones': self.zones, 'show_seconds': self.showSeconds.get()}
 
     def saveConfig(self):
         """
         Save current state
         """
-        config = {'zones': self.zones, 'show_seconds': self.showSeconds.get()}
-
+        self.readGUI()
         with open(yamlPath, 'w') as config_file:
-            yaml.dump(config, config_file)
+            yaml.dump(self.config, config_file)
+            error('* wrote "{}"'.format(yamlPath))
+            self.savedConfig = copy.deepcopy(self.config)
 
 
 def change_text(app):
@@ -453,7 +478,12 @@ def change_text(app):
                 print("Valid timezones: {}".format(pytz.all_timezones))
     if not any_hint:
         app.hideHint()
-    app.saveConfig()
+
+    app.readGUI()
+    if app.config != app.savedConfig:
+        app.saveConfig()
+    else:
+        debug("app.config: {}".format(app.config))
 
     # update clocks every second if showing seconds, every 10 seconds otherwise to reduce cpu load
     root.after(1000 if show_seconds else 10000, change_text, app)
