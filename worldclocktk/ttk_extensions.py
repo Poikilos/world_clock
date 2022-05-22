@@ -1,5 +1,13 @@
-import tkinter as tk
-from tkinter import ttk
+from __future__ import print_function
+import sys
+python_mr = sys.version_info.major
+if python_mr >= 3:
+    import tkinter as tk
+    from tkinter import ttk
+else:
+    import Tkinter as tk
+    import ttk
+
 import re
 
 
