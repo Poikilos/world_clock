@@ -104,12 +104,6 @@ except ModuleNotFoundError as ex:
     # print(ttkExtError)
     exit(1)
 
-if python_mr >= 3:  # try:
-    from tkinter import messagebox
-else:  # except ImportError:
-    # Python 2
-    import tkMessageBox as messagebox
-
 myDir = os.path.dirname(os.path.abspath(__file__))
 repoDir = os.path.dirname(myDir)
 assetsDir = os.path.join(myDir, "assets")
