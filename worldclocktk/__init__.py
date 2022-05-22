@@ -327,7 +327,7 @@ class WorldClock:
                         'caption': 'California'
                     },
                 ]
-            self.showSeconds = tk.BooleanVar(value=True)
+            self.showSecondsVar = tk.BooleanVar(value=True)
 
         self.maxClockCount = maxClockCount
         self.clockCount = len(self.zones)
@@ -390,7 +390,7 @@ class WorldClock:
         self.clockCountDropDown = DropDown(self.frame, range(1, self.maxClockCount + 1), self.clockCount)
         self.clockCountDropDown.grid(row=i + 1, column=1, columnspan=1)
 
-        self.secondsCheckBox = ttk.Checkbutton(self.frame, text="Show Seconds", variable=self.showSeconds)
+        self.secondsCheckBox = ttk.Checkbutton(self.frame, text="Show Seconds", variable=self.showSecondsVar)
         self.secondsCheckBox.grid(row=i + 1, column=2, columnspan=1)
         change_text(self)
 
@@ -411,14 +411,14 @@ class WorldClock:
         try:
             self.config = yaml.safe_load(open(yamlPath))
             self.zones = self.config['zones']
-            self.showSeconds = tk.BooleanVar(value=self.config['show_seconds'])
+            self.showSecondsVar = tk.BooleanVar(value=self.config['show_seconds'])
         except FileNotFoundError as ex:
             self.config = {}
             debug(str(ex))
         self.savedConfig = copy.deepcopy(self.config)
 
     def readGUI(self):
-        self.config = {'zones': self.zones, 'show_seconds': self.showSeconds.get()}
+        self.config = {'zones': self.zones, 'show_seconds': self.showSecondsVar.get()}
 
     def saveConfig(self):
         """
@@ -435,7 +435,7 @@ def change_text(app):
     """
     Takes our GUI and updates it for the time zones
     """
-    show_seconds = app.showSeconds.get()
+    show_seconds = app.showSecondsVar.get()
     app.zones = []
     for i in range(len(app.tzEntries)):
         app.zones.append(
