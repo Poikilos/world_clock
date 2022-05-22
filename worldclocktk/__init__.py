@@ -4,6 +4,8 @@
 -Kaveh Tehrani
 """
 
+from __future__ import print_function
+import sys
 from datetime import datetime
 import pytz
 # import tkinter as tk
@@ -13,9 +15,10 @@ import platform
 import os
 import shutil
 
-try:
+python_mr = sys.version_info.major
+if python_mr >= 3:  # try:
     from tkinter import messagebox
-except ImportError:
+else:  # except ImportError:
     # Python 2
     import tkMessageBox as messagebox
 
@@ -29,15 +32,20 @@ python3 -m pip install ttkthemes
 # <https://stackoverflow.com/questions/66233714/installation-of-ttk-themes-for-tkinter>
 
 '''
-python_revision = 2
+
+'''
+from tkinter import ttk
 try:
-    import Tkinter as tk
-    import ttk
-    print("* using Python 2 ttk")
-except ImportError as ex2:
-    python_revision = 3
+    from ttkthemes import ThemedTk
+except ImportError:
+    # python2
+    pass
+    # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
+'''
+
+if python_mr >= 3:  # except ImportError as ex2:
     # python 3
-    # Make this the exception since `import tkinter as tk` works in
+    # `import tkinter as tk` works in
     # recent versions of Python 2 but the other features do not.
     print("* using Python 3 ttk")
     try:
@@ -56,16 +64,11 @@ except ImportError as ex2:
         print(ttkError)
         # raise ex3
         exit(1)
+else:  # try:
+    import Tkinter as tk
+    import ttk
+    print("* using Python 2 ttk")
 
-'''
-from tkinter import ttk
-try:
-    from ttkthemes import ThemedTk
-except ImportError:
-    # python2
-    pass
-    # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
-'''
 
 # s=ttk.Style()
 # print("theme names: {}".format(s.theme_names()))
@@ -83,9 +86,9 @@ except ModuleNotFoundError as ex:
     # print(ttkExtError)
     exit(1)
 
-try:
+if python_mr >= 3:  # try:
     from tkinter import messagebox
-except ImportError:
+else:  # except ImportError:
     # Python 2
     import tkMessageBox as messagebox
 
@@ -104,7 +107,7 @@ def append_completion(criteria, timezone):
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
 
-
+# region same as blnk
 profile = None
 
 myDirName = "blnk"
@@ -203,6 +206,9 @@ if myCloudPath is not None:
     else:
         print('  * Manually create "{}" to enable cloud saves!'
               ''.format(tryCloudProfileDir))
+
+# endregion same as blnk
+
 
 append_completion("India", "Asia/Kolkata")
 append_completion("Kolkata", "Asia/Kolkata")
@@ -459,7 +465,7 @@ app = None
 def main():
     global root
     global app
-    if python_revision == 3:
+    if python_mr >= 3:
         root = ThemedTk(themebg=True)
         app = WorldClock(master=root)
         root.set_theme('equilux')
@@ -498,6 +504,7 @@ def main():
 
     change_text(app)
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
