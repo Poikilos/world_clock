@@ -3,11 +3,26 @@
 import re
 import sys
 import os
+import platform
 
-if os.path.isdir("worldclocktk"):
-    thisModPath = os.path.realpath("worldclocktk")
+moduleName = "worldclocktk"
+
+profile = os.environ.get('HOME')
+if platform.system() == "Windows":
+    profile = os.environ['USERPROFILE']
+
+tryRepos = os.path.join(profile, 'git')
+tryRepo = os.path.join(tryRepos, 'world_clock')
+tryModule = os.path.join(tryRepo, 'worldclocktk')
+
+if os.path.isdir(moduleName):
+    thisModPath = os.path.realpath(".")
     print("* using {}...".format(thisModPath))
     sys.path.insert(0, thisModPath)
+elif os.path.isdir(tryModule):
+    print("* using {}...".format(tryModule))
+    sys.path.insert(0, tryRepo)
+
 
 from worldclocktk import main
 
