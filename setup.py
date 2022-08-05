@@ -12,17 +12,19 @@ import sys
 # if python_mr == 2:
 #     versionedModule['urllib'] = 'urllib2'
 # long_description = ""
-with open("readme.md", "r") as fh:
-    long_description = fh.read()
+if os.path.isfile("readme.md"):
+    with open("readme.md", "r") as fh:
+        long_description = fh.read()
 
 install_requires = []
 
-with open("requirements.txt", "r") as ins:
-    for rawL in ins:
-        line = rawL.strip()
-        if len(line) < 1:
-            continue
-        install_requires.append(line)
+if os.path.isfile("requirements.txt"):
+    with open("requirements.txt", "r") as ins:
+        for rawL in ins:
+            line = rawL.strip()
+            if len(line) < 1:
+                continue
+            install_requires.append(line)
 
 description = '''With other multi-timezone clocks you can see where
  has what time, but with world_clock you can see who! You can add a
