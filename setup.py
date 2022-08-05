@@ -1,17 +1,13 @@
 import setuptools
 import sys
-# - For the example on which this was based, see
-#   https://github.com/poikilos/nopackage/blob/main/setup.py
-#   which is based on
-#   https://github.com/poikilos/pypicolcd/blob/master/setup.py
-# - For nose, see https://github.com/poikilos/mgep/blob/master/setup.py
+import os
 
-# python_mr = sys.version_info.major
 # versionedModule = {}
 # versionedModule['urllib'] = 'urllib'
-# if python_mr == 2:
+# if sys.version_info.major < 3:
 #     versionedModule['urllib'] = 'urllib2'
 # long_description = ""
+
 if os.path.isfile("readme.md"):
     with open("readme.md", "r") as fh:
         long_description = fh.read()
