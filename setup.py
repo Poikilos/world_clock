@@ -26,12 +26,14 @@ if os.path.isfile("requirements.txt"):
                 continue
             install_requires.append(line)
 
-description = '''With other multi-timezone clocks you can see where
- has what time, but with world_clock you can see who! You can add a
- person's name or any custom note to any clock, and even add more than
- one with the same timezone. Save to the cloud if you have a working
- Nextcloud/profile/ or ownCloud/profile/ directory in your user
- profile!'''
+description = (
+    "With other multi-timezone clocks you can see where"
+    " has what time, but with world_clock you can see who! You can add a"
+    " person's name or any custom note to any clock, and even add more than"
+    " one with the same timezone. Save to the cloud if you have a working"
+    " Nextcloud/profile/ or ownCloud/profile/ directory in your user"
+    " profile!"
+)
 
 setuptools.setup(
     name='world_clock',
