@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """
-"Wrote this since Win10 only allows two native clocks and the world clock app is too massive"
+Add and label world clocks, including duplicates with different names.
+The labels can help you with remote collaboration if you put a name of
+a person or organization in the label field.
+
+"Wrote this since Win10 only allows two native clocks and the world
+clock app is too massive"
 -Kaveh Tehrani
 """
 
@@ -16,20 +21,27 @@ import pytz
 import yaml
 # import tkinter as tk
 
-verbose = False
+verbosity = 0
 
 for i in range(1, len(sys.argv)):
     arg = sys.argv[i]
     if arg == "--verbose":
-        verbose = True
+        verbosity = 1
+    elif arg == "--debug":
+        verbosity = 2
 
 
-def error(*args, **kwargs):
+def echo0(*args, **kwargs):  # formerly error
     print(*args, file=sys.stderr, **kwargs)
 
 
-def debug(*args, **kwargs):
-    if verbose:
+def echo1(*args, **kwargs):  # formerly debug, but verbosity was True (1)
+    if verbosity >= 1:
+        print(*args, file=sys.stderr, **kwargs)
+
+
+def echo2(*args, **kwargs):
+    if verbosity >= 2:
         print(*args, file=sys.stderr, **kwargs)
 
 
@@ -112,12 +124,14 @@ iconIcoPath = os.path.join(assetsDir, "clock_mini_icon.ico")
 
 autocompletions = {}
 
+
 def append_completion(criteria, timezone):
     criteria = criteria.lower().strip()
     tmp = autocompletions.get(criteria)
     if tmp is None:
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
+
 
 from .morefolders import (
     # profile,
@@ -155,7 +169,7 @@ if yamlPath != oldYamlPath:
     # Check for a duplicate local folder:
     if os.path.isfile(oldYamlPath):
         if not os.path.isfile(yamlPath):
-            error('* mv "{}" "{}"'
+            echo0('* mv "{}" "{}"'
                   ''.format(yamlPath, newYamlPath))
             shutil.move(yamlPath, newYamlPath)
         # else getUnique already shows a warning both folders exist
@@ -302,7 +316,13 @@ class WorldClock:
         self.captionEntries = []
         self.tzEntries = []
         for i in range(self.clockCount):
-            self.tzEntries.append(AutocompleteEntry(pytz.all_timezones, self.frame, listboxLength=4, width=20, matchesFunction=matches))
+            self.tzEntries.append(AutocompleteEntry(
+                pytz.all_timezones,
+                self.frame,
+                listboxLength=4,
+                width=20,
+                matchesFunction=matches,
+            ))
             self.tzEntries[i].var.set(pytz.all_timezones[0])
             if i < len(self.zones):
                 self.tzEntries[i].delete(0, tk.END)
@@ -320,12 +340,24 @@ class WorldClock:
                 self.captionEntries[i].insert(0, self.getCaptionSafely(i))
             self.captionEntries[i].grid(row=i, column=3, columnspan=1)
 
-        self.updateButton = ttk.Button(self.frame, text="Apply", command=self.redesignClocks)
+        self.updateButton = ttk.Button(
+            self.frame,
+            text="Apply",
+            command=self.redesignClocks,
+        )
         self.updateButton.grid(row=i + 1, column=0, columnspan=1)
-        self.clockCountDropDown = DropDown(self.frame, range(1, self.maxClockCount + 1), self.clockCount)
+        self.clockCountDropDown = DropDown(
+            self.frame,
+            range(1, self.maxClockCount + 1),
+            self.clockCount,
+        )
         self.clockCountDropDown.grid(row=i + 1, column=1, columnspan=1)
 
-        self.secondsCheckBox = ttk.Checkbutton(self.frame, text="Show Seconds", variable=self.showSecondsVar)
+        self.secondsCheckBox = ttk.Checkbutton(
+            self.frame,
+            text="Show Seconds",
+            variable=self.showSecondsVar,
+        )
         self.secondsCheckBox.grid(row=i + 1, column=2, columnspan=1)
         change_text(self)
 
@@ -346,14 +378,19 @@ class WorldClock:
         try:
             self.config = yaml.safe_load(open(yamlPath))
             self.zones = self.config['zones']
-            self.showSecondsVar = tk.BooleanVar(value=self.config['show_seconds'])
+            self.showSecondsVar = tk.BooleanVar(
+                value=self.config['show_seconds']
+            )
         except FileNotFoundError as ex:
             self.config = {}
-            debug(str(ex))
+            echo1(str(ex))
         self.savedConfig = copy.deepcopy(self.config)
 
     def readGUI(self):
-        self.config = {'zones': self.zones, 'show_seconds': self.showSecondsVar.get()}
+        self.config = {
+            'zones': self.zones,
+            'show_seconds': self.showSecondsVar.get(),
+        }
 
     def saveConfig(self):
         """
@@ -362,7 +399,7 @@ class WorldClock:
         self.readGUI()
         with open(yamlPath, 'w') as config_file:
             yaml.dump(self.config, config_file)
-            error('* wrote "{}"'.format(yamlPath))
+            echo0('* wrote "{}"'.format(yamlPath))
             self.savedConfig = copy.deepcopy(self.config)
 
 
@@ -418,10 +455,12 @@ def change_text(app):
     if app.config != app.savedConfig:
         app.saveConfig()
     else:
-        debug("app.config: {}".format(app.config))
+        echo1("app.config: {}".format(app.config))
 
-    # update clocks every second if showing seconds, every 10 seconds otherwise to reduce cpu load
+    # Update clocks every second if showing seconds,
+    #   every 10 seconds otherwise to reduce CPU load:
     root.after(1000 if show_seconds else 10000, change_text, app)
+
 
 root = None
 app = None
