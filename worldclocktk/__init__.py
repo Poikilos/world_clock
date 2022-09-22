@@ -5,16 +5,16 @@
 """
 
 from __future__ import print_function
+
+import os
+import platform
+import shutil
+import copy
 import sys
 from datetime import datetime
 import pytz
-# import tkinter as tk
 import yaml
-
-import platform
-import os
-import shutil
-import copy
+# import tkinter as tk
 
 verbose = False
 
@@ -119,107 +119,48 @@ def append_completion(criteria, timezone):
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
 
-# region same as blnk
-profile = None
+from .morefolders import (
+    # profile,
+    AppData,
+    # local,
+    # myLocal,
+    # shortcutsDir,
+    # replacements,
+    # username,
+    # logsDir,
+    # share,
+    profiles,
+    # temporaryFiles,
+    # myCloudName,
+    myCloudPath,
+    getUnique,
+)
 
-myDirName = "blnk"
-AppData = None
-local = None
-myLocal = None
-shortcutsDir = None
-replacements = None
-username = None
-profiles = None
-logsDir = None
-if platform.system() == "Windows":
-    username = os.environ.get("USERNAME")
-    profile = os.environ.get("USERPROFILE")
-    _unused_ = os.path.join(profile, "AppData")
-    AppData = os.path.join(_unused_, "Roaming")
-    local = os.path.join(_unused_, "Local")
-    share = local
-    myShare = os.path.join(local, myDirName)
-    shortcutsDir = os.path.join(profile, "Desktop")
-    dtPath = os.path.join(shortcutsDir, "blnk.blnk")
-    profiles = os.environ.get("PROFILESFOLDER")
-    temporaryFiles = os.path.join(local, "Temp")
-else:
-    username = os.environ.get("USER")
-    profile = os.environ.get("HOME")
-    local = os.path.join(profile, ".local")
-    share = os.path.join(local, "share")
-    myShare = os.path.join(share, "blnk")
-    if platform.system() == "Darwin":
-        # See also <https://github.com/poikilos/world_clock>
-        shortcutsDir = os.path.join(profile, "Desktop")
-        Library = os.path.join(profile, "Library")
-        AppData = os.path.join(Library, "Application Support")
-        LocalAppData = os.path.join(Library, "Application Support")
-        logsDir = os.path.join(profile, "Library", "Logs")
-        profiles = "/Users"
-        temporaryFiles = os.environ.get("TMPDIR")
-    else:
-        # GNU+Linux Systems
-        shortcutsDir = os.path.join(share, "applications")
-        AppData = os.path.join(profile, ".config")
-        LocalAppData = os.path.join(profile, ".config")
-        logsDir = os.path.join(profile, ".var", "log")
-        profiles = "/home"
-        temporaryFiles = "/tmp"
-    dtPath = os.path.join(shortcutsDir, "blnk.desktop")
-localBinPath = os.path.join(local, "bin")
+MY_LUID = "world_clock"  # formerly myDirName
+# ^ TODO: set to "worldclocktk"?
+myShare = getUnique(MY_LUID, key="Share:Unique")
+dtPath = getUnique(MY_LUID, key="Desktop:Unique")
+myConfDir = getUnique(MY_LUID, key="Configs:Unique", allow_cloud=True)
 
-# statedCloud = "owncloud"
-myCloudName = None
-myCloudPath = None
+if not os.path.isdir(myConfDir):
+    # os.makedirs
+    print('  * creating "{}"...')
+    os.mkdir(myConfDir)
 
-for tryCloudName in ["Nextcloud", "ownCloud", "owncloud"]:
-    # ^ The first one must take precedence if more than one exists!
-    tryCloudPath = os.path.join(profile, tryCloudName)
-    if os.path.isdir(tryCloudPath):
-        myCloudName = tryCloudName
-        myCloudPath = tryCloudPath
-        print('* detected "{}"'.format(myCloudPath))
-        break
-
-confDirName = "world_clock"
-myConfDir = os.path.join(AppData, confDirName)
-myCloudProfile = None
-myCloudDir = None
 yamlName = "world_clock.yaml"
+oldYamlPath = getUnique(MY_LUID, key="Configs:Unique")
 yamlPath = os.path.join(myConfDir, yamlName)
-# ^ changed below if ~/Nextcloud/profile/ exists (or ownCloud)
-if myCloudPath is not None:
-    tryCloudProfileDir = os.path.join(myCloudPath, "profile")
-    if os.path.isdir(tryCloudProfileDir):
-        myCloudProfile = tryCloudProfileDir
-        print('  * using cloud profile (since found "{}")!'
-              ''.format(myCloudProfile))
-        myCloudDir = os.path.join(myCloudProfile, confDirName)
-        if not os.path.isdir(myCloudDir):
-            # os.makedirs
-            print('  * creating "{}"...')
-            os.mkdir(myCloudDir)
-        newYamlPath = os.path.join(myCloudDir, yamlName)
-        if os.path.isfile(yamlPath):
-            if not os.path.isfile(newYamlPath):
-                print('  * mv "{}" "{}"'
-                      ''.format(yamlPath, newYamlPath))
-                shutil.move(yamlPath, newYamlPath)
-            else:
-                print('  * WARNING: ignoring old "{}"'
-                      ' since you have "{}" already.'
-                      ' Delete the old one'
-                      ' to make this message go away.'
-                      ''.format(yamlPath, newYamlPath))
-        yamlPath = newYamlPath
+if yamlPath != oldYamlPath:
+    # ^ If there is a cloud folder
+    # Check for a duplicate local folder:
+    if os.path.isfile(oldYamlPath):
         if not os.path.isfile(yamlPath):
-            print('  * a new "{}" will be created.'.format(yamlPath))
-    else:
-        print('  * Manually create "{}" to enable cloud saves!'
-              ''.format(tryCloudProfileDir))
-
-# endregion same as blnk
+            error('* mv "{}" "{}"'
+                  ''.format(yamlPath, newYamlPath))
+            shutil.move(yamlPath, newYamlPath)
+        # else getUnique already shows a warning both folders exist
+if not os.path.isfile(yamlPath):
+    print('  * a new "{}" will be created.'.format(yamlPath))
 
 
 append_completion("India", "Asia/Kolkata")
