@@ -21,6 +21,9 @@ import pytz
 import yaml
 # import tkinter as tk
 
+if sys.version_info.major < 3:
+    FileNotFoundError = IOError
+
 verbosity = 0
 
 for i in range(1, len(sys.argv)):
