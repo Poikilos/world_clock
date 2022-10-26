@@ -21,9 +21,6 @@ import pytz
 import yaml
 # import tkinter as tk
 
-if sys.version_info.major < 3:
-    FileNotFoundError = IOError
-
 verbosity = 0
 
 for i in range(1, len(sys.argv)):
@@ -48,11 +45,12 @@ def echo2(*args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
 
 
-python_mr = sys.version_info.major
-if python_mr >= 3:  # try:
+if sys.version_info.major >= 3:
     from tkinter import messagebox
-else:  # except ImportError:
+else:
     # Python 2
+    FileNotFoundError = IOError
+    ModuleNotFoundError = ImportError
     import tkMessageBox as messagebox
 
 ttkError = '''
@@ -76,7 +74,7 @@ except ImportError:
     # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
 '''
 
-if python_mr >= 3:  # except ImportError as ex2:
+if sys.version_info.major >= 3:
     # python 3
     # `import tkinter as tk` works in
     # recent versions of Python 2 but the other features do not.
@@ -97,7 +95,7 @@ if python_mr >= 3:  # except ImportError as ex2:
         print(ttkError)
         # raise ex3
         exit(1)
-else:  # try:
+else:
     import Tkinter as tk
     import ttk
     print("* using Python 2 ttk")
@@ -480,7 +478,7 @@ app = None
 def main():
     global root
     global app
-    if python_mr >= 3:
+    if sys.version_info.major >= 3:
         root = ThemedTk(themebg=True)
         app = WorldClock(master=root)
         root.set_theme('equilux')

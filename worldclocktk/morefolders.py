@@ -27,6 +27,9 @@ from __future__ import print_function
 import sys
 import os
 import platform
+if sys.version_info.major < 3:
+    FileNotFoundError = IOError
+    ModuleNotFoundError = ImportError
 
 
 def echo0(*args, **kwargs):
