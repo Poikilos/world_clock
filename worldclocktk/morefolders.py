@@ -23,6 +23,7 @@ Known issues:
 - [Consider splitting morefolders into a separate repo and require it.
   #5](https://github.com/poikilos/blnk/issues/5)
 '''
+from __future__ import print_function
 import sys
 import os
 import platform
