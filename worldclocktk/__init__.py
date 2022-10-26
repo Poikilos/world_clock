@@ -258,6 +258,18 @@ def english_timezones_list(criteria, sep=", ", last_sep=" or "):
 
 class WorldClock:
     showTZNames = True
+    
+    @classmethod
+    def getDefaultZones(cls):
+        return [
+            {
+                'tz': 'US/Eastern',
+            },
+            {
+                'tz': 'US/Pacific',
+                'caption': 'California'
+            },
+        ]
 
     def __init__(self, master, zones=None, maxClockCount=20):
         self.master = master
@@ -265,21 +277,17 @@ class WorldClock:
         self.hintLabel = None
         self.savedConfig = None
         self.master.title('World Clock')
+        self.zones = None
 
         # load last preset, otherwise load defaults
         self.loadConfig()
+        
         if not self.config:
             if not self.zones:
-                self.zones = [
-                    {
-                        'tz': 'US/Eastern',
-                    },
-                    {
-                        'tz': 'US/Pacific',
-                        'caption': 'California'
-                    },
-                ]
+                self.zones = WorldClock.getDefaultZones()
             self.showSecondsVar = tk.BooleanVar(value=True)
+        elif not self.zones:
+            self.zones = WorldClock.getDefaultZones()
 
         self.maxClockCount = maxClockCount
         self.clockCount = len(self.zones)
