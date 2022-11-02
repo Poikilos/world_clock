@@ -132,8 +132,9 @@ def append_completion(criteria, timezone):
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
 
+from .find_moreplatform import moreplatform
 
-from .morefolders import (
+from moreplatform import (
     # profile,
     AppData,
     # local,
