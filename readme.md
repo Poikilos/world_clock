@@ -24,3 +24,15 @@ systems, or Application Support for Darwin).
 
 upstream screenshot, before adding notes feature:
 ![alt text](screenshot.png)
+
+
+## Install
+- cd to the directory of the program
+- pip install setup.py
+- If you are using Python 2 (Run `python --version` to check), you must:
+  - Download pyyaml from <https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyyaml> for your version of python (cp27 for Python 2.7 for example, and amd64 in most cases [64-bit Windows, AMD or Intel]).
+  - Open a Command Prompt
+  - `cd Downloads`
+  - `pip install PyYAML‑5.3‑cp27‑cp27m‑win_amd64.whl` (replace `PyYAML‑5.3‑cp27‑cp27m‑win_amd64.whl` with the correct one you downloaded for your Python and OS)
+- install via `pip install`
+- Make a shortcut (On Windows, make the shortcut to (replace `C:\Python27` with your Python installation) `C:\Python27\Scripts\world_clock.exe` and choose the icon from `C:\Python27\lib\site-packages\world_clock\assets\`)

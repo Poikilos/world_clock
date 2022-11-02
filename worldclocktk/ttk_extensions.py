@@ -1,10 +1,12 @@
 from __future__ import print_function
 import sys
-python_mr = sys.version_info.major
-if python_mr >= 3:
+
+if sys.version_info.major >= 3:
     import tkinter as tk
     from tkinter import ttk
 else:
+    FileNotFoundError = IOError
+    ModuleNotFoundError = ImportError
     import Tkinter as tk
     import ttk
 

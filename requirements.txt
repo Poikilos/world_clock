@@ -1,2 +1,4 @@
 ttkthemes
+pytz
+yaml
 https://github.com/Hierosoft/moreplatform/archive/refs/heads/main.zip

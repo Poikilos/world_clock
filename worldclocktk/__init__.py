@@ -45,11 +45,12 @@ def echo2(*args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
 
 
-python_mr = sys.version_info.major
-if python_mr >= 3:  # try:
+if sys.version_info.major >= 3:
     from tkinter import messagebox
-else:  # except ImportError:
+else:
     # Python 2
+    FileNotFoundError = IOError
+    ModuleNotFoundError = ImportError
     import tkMessageBox as messagebox
 
 ttkError = '''
@@ -73,7 +74,7 @@ except ImportError:
     # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
 '''
 
-if python_mr >= 3:  # except ImportError as ex2:
+if sys.version_info.major >= 3:
     # python 3
     # `import tkinter as tk` works in
     # recent versions of Python 2 but the other features do not.
@@ -94,7 +95,7 @@ if python_mr >= 3:  # except ImportError as ex2:
         print(ttkError)
         # raise ex3
         exit(1)
-else:  # try:
+else:
     import Tkinter as tk
     import ttk
     print("* using Python 2 ttk")
@@ -256,6 +257,18 @@ def english_timezones_list(criteria, sep=", ", last_sep=" or "):
 
 class WorldClock:
     showTZNames = True
+    
+    @classmethod
+    def getDefaultZones(cls):
+        return [
+            {
+                'tz': 'US/Eastern',
+            },
+            {
+                'tz': 'US/Pacific',
+                'caption': 'California'
+            },
+        ]
 
     def __init__(self, master, zones=None, maxClockCount=20):
         self.master = master
@@ -263,21 +276,17 @@ class WorldClock:
         self.hintLabel = None
         self.savedConfig = None
         self.master.title('World Clock')
+        self.zones = None
 
         # load last preset, otherwise load defaults
         self.loadConfig()
+        
         if not self.config:
             if not self.zones:
-                self.zones = [
-                    {
-                        'tz': 'US/Eastern',
-                    },
-                    {
-                        'tz': 'US/Pacific',
-                        'caption': 'California'
-                    },
-                ]
+                self.zones = WorldClock.getDefaultZones()
             self.showSecondsVar = tk.BooleanVar(value=True)
+        elif not self.zones:
+            self.zones = WorldClock.getDefaultZones()
 
         self.maxClockCount = maxClockCount
         self.clockCount = len(self.zones)
@@ -470,7 +479,7 @@ app = None
 def main():
     global root
     global app
-    if python_mr >= 3:
+    if sys.version_info.major >= 3:
         root = ThemedTk(themebg=True)
         app = WorldClock(master=root)
         root.set_theme('equilux')
