@@ -133,30 +133,35 @@ def append_completion(criteria, timezone):
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
 
-from .find_moreplatform import moreplatform
+from .find_hierosoft import hierosoft
 
-from moreplatform import (
-    # profile,
-    AppData,
+from hierosoft import (
+    # HOME, # profile,
+    APPDATA,
     # local,
     # myLocal,
-    # shortcutsDir,
+    # SHORTCUTS_DIR,  # shortcutsDir
     # replacements,
     # username,
     # logsDir,
     # share,
-    profiles,
+    PROFILES,  # profiles
     # temporaryFiles,
     # myCloudName,
     myCloudPath,
-    getUnique,
+    get_unique_path,
 )
 
 MY_LUID = "world_clock"  # formerly myDirName
 # ^ TODO: set to "worldclocktk"?
-myShare = getUnique(MY_LUID, key="Share:Unique")
-dtPath = getUnique(MY_LUID, key="Desktop:Unique")
-myConfDir = getUnique(MY_LUID, key="Configs:Unique", allow_cloud=True)
+myShare = get_unique_path(MY_LUID, key="Share:Unique")
+dtPath = get_unique_path(MY_LUID, key="Desktop:Unique")
+myConfDir = get_unique_path(MY_LUID, key="Configs:Unique", allow_cloud=True)
+echo0("myShare={}".format(myShare))
+echo0("dtPath={}".format(dtPath))
+echo0("myConfDir={}".format(myConfDir))
+
+
 
 if not os.path.isdir(myConfDir):
     # os.makedirs
@@ -164,7 +169,7 @@ if not os.path.isdir(myConfDir):
     os.mkdir(myConfDir)
 
 yamlName = "world_clock.yaml"
-oldYamlPath = getUnique(MY_LUID, key="Configs:Unique")
+oldYamlPath = get_unique_path(MY_LUID, key="Configs:Unique")
 yamlPath = os.path.join(myConfDir, yamlName)
 if yamlPath != oldYamlPath:
     # ^ If there is a cloud folder
@@ -174,7 +179,7 @@ if yamlPath != oldYamlPath:
             echo0('* mv "{}" "{}"'
                   ''.format(yamlPath, newYamlPath))
             shutil.move(yamlPath, newYamlPath)
-        # else getUnique already shows a warning both folders exist
+        # else get_unique_path already shows a warning both folders exist
 if not os.path.isfile(yamlPath):
     print('  * a new "{}" will be created.'.format(yamlPath))
 
@@ -257,7 +262,7 @@ def english_timezones_list(criteria, sep=", ", last_sep=" or "):
 
 class WorldClock:
     showTZNames = True
-    
+
     @classmethod
     def getDefaultZones(cls):
         return [
@@ -280,7 +285,7 @@ class WorldClock:
 
         # load last preset, otherwise load defaults
         self.loadConfig()
-        
+
         if not self.config:
             if not self.zones:
                 self.zones = WorldClock.getDefaultZones()
