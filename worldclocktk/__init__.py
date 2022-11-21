@@ -51,6 +51,7 @@ else:
     # Python 2
     FileNotFoundError = IOError
     ModuleNotFoundError = ImportError
+    NotADirectoryError = OSError
     import tkMessageBox as messagebox
 
 ttkError = '''
