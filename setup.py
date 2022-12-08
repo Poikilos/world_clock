@@ -6,11 +6,6 @@ import os
 # versionedModule['urllib'] = 'urllib'
 # if sys.version_info.major < 3:
 #     versionedModule['urllib'] = 'urllib2'
-# long_description = ""
-
-if os.path.isfile("readme.md"):
-    with open("readme.md", "r") as fh:
-        long_description = fh.read()
 
 install_requires = []
 
@@ -30,6 +25,10 @@ description = (
     " Nextcloud/profile/ or ownCloud/profile/ directory in your user"
     " profile!"
 )
+long_description = description
+if os.path.isfile("readme.md"):
+    with open("readme.md", "r") as fh:
+        long_description = fh.read()
 
 setuptools.setup(
     name='world_clock',
