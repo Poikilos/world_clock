@@ -2,7 +2,7 @@ Requirements that won't install via install_requires (derived from requirements.
 - https://github.com/Hierosoft/hierosoft/archive/refs/heads/main.zip
   (see PEP508 and
   <https://stackoverflow.com/questions/18026980/python-setuptools-how-can-i-list-a-private-repository-under-install-requires>)
-  - instead use hierosoft-update @ git+https://github.com/Hierosoft/hierosoft@main
+  - instead use hierosoft @ git+https://github.com/Hierosoft/hierosoft@main
 - yaml pip install error:
 ERROR: Could not find a version that satisfies the requirement yaml (from world-clock) (from versions: none)
 ERROR: No matching distribution found for yaml
