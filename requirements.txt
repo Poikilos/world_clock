@@ -1,3 +1,2 @@
 pytz
 ttkthemes
-hierosoft @ git+https://github.com/Hierosoft/hierosoft@main

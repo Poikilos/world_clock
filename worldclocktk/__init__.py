@@ -134,43 +134,71 @@ def append_completion(criteria, timezone):
         autocompletions[criteria] = []
     autocompletions[criteria].append(timezone)
 
-from .find_hierosoft import hierosoft
+# region copied from hierosoft (has same author as this file)
+HOME = None  # formerly profile
+APPDATA = None  # formerly APPDATA
+LOCALAPPDATA = None  # formerly local
+SHORTCUTS_DIR = None  # formerly SHORTCUTS_DIR
+SHARE = None  # formerly share
+if platform.system() == "Windows":
+    HOME = os.environ.get("USERPROFILE")
+    _data_parent_ = os.path.join(HOME, "AppData")
+    APPDATA = os.path.join(_data_parent_, "Roaming")
+    LOCALAPPDATA = os.path.join(_data_parent_, "Local")
+    del _data_parent_
+    SHARE = LOCALAPPDATA  # It is synonymous
+    SHORTCUTS_DIR = os.path.join(HOME, "Desktop")
+else:
+    HOME = os.environ.get("HOME")
+    LOCALAPPDATA = os.path.join(HOME, ".local", "share")
+    SHARE = LOCALAPPDATA  # synonymous; generally written on install
+    if platform.system() == "Darwin":
+        SHORTCUTS_DIR = os.path.join(HOME, "Desktop")
+        Library = os.path.join(HOME, "Library")
+        APPDATA = os.path.join(Library, "Application Support")
+    else:
+        SHORTCUTS_DIR = os.path.join(SHARE, "applications")
+        APPDATA = os.path.join(HOME, ".config")
 
-from hierosoft import (
-    # HOME, # profile,
-    APPDATA,
-    # local,
-    # myLocal,
-    # SHORTCUTS_DIR,  # shortcutsDir
-    # replacements,
-    # username,
-    # logsDir,
-    # share,
-    PROFILES,  # profiles
-    # temporaryFiles,
-    # myCloudName,
-    myCloudPath,
-    get_unique_path,
-)
+MY_LUID = "world_clock"
+myShare = os.path.join(SHARE, MY_LUID)
 
-MY_LUID = "world_clock"  # formerly myDirName
-# ^ TODO: set to "worldclocktk"?
-myShare = get_unique_path(MY_LUID, key="Share:Unique")
-dtPath = get_unique_path(MY_LUID, key="Desktop:Unique")
-myConfDir = get_unique_path(MY_LUID, key="Configs:Unique", allow_cloud=True)
+if platform.system() == "Windows":
+    dtPath = os.path.join(SHORTCUTS_DIR, MY_LUID+".blnk")
+elif platform.system() == "Darwin":
+    dtPath = os.path.join(SHORTCUTS_DIR, MY_LUID+".desktop")
+    # TODO: ^ Use ".command", applescript, or something else.
+else:
+    dtPath = os.path.join(SHORTCUTS_DIR, MY_LUID+".desktop")
+
+CONFS_DIR = APPDATA
+tryConfDirs = [
+    os.path.join(HOME, "Nextcloud", "profile"),
+    os.path.join(HOME, "ownCloud", "profile"),
+]
+for tryConfDir in tryConfDirs:
+    if os.path.isdir(tryConfDir):
+        CONFS_DIR = tryConfDir
+        break  # prefer earliest in list
+if CONFS_DIR == APPDATA:
+    echo0("To save a cloud profile, install Nextcloud or ownCloud"
+          " and create a profile dir like one of: %s")
+del tryConfDirs
+
+myConfDir = os.path.join(CONFS_DIR, MY_LUID)
+# endregion
+
 echo0("myShare={}".format(myShare))
 echo0("dtPath={}".format(dtPath))
 echo0("myConfDir={}".format(myConfDir))
 
-
-
 if not os.path.isdir(myConfDir):
     # os.makedirs
     print('  * creating "{}"...')
-    os.mkdir(myConfDir)
+    os.makedirs(myConfDir)
 
 yamlName = "world_clock.yaml"
-oldYamlPath = get_unique_path(MY_LUID, key="Configs:Unique")
+oldYamlPath = os.path.join(APPDATA, MY_LUID)
 yamlPath = os.path.join(myConfDir, yamlName)
 if yamlPath != oldYamlPath:
     # ^ If there is a cloud folder
@@ -178,12 +206,11 @@ if yamlPath != oldYamlPath:
     if os.path.isfile(oldYamlPath):
         if not os.path.isfile(yamlPath):
             echo0('* mv "{}" "{}"'
-                  ''.format(yamlPath, newYamlPath))
-            shutil.move(yamlPath, newYamlPath)
+                  ''.format(oldYamlPath, yamlPath))
+            shutil.move(oldYamlPath, yamlPath)
         # else get_unique_path already shows a warning both folders exist
 if not os.path.isfile(yamlPath):
     print('  * a new "{}" will be created.'.format(yamlPath))
-
 
 append_completion("India", "Asia/Kolkata")
 append_completion("Kolkata", "Asia/Kolkata")

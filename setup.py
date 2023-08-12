@@ -7,15 +7,10 @@ import os
 # if sys.version_info.major < 3:
 #     versionedModule['urllib'] = 'urllib2'
 
-install_requires = []
-
-if os.path.isfile("requirements.txt"):
-    with open("requirements.txt", "r") as ins:
-        for rawL in ins:
-            line = rawL.strip()
-            if len(line) < 1:
-                continue
-            install_requires.append(line)
+install_requires = [
+    "pytz",
+    "ttkthemes",
+]
 
 description = (
     "With other multi-timezone clocks you can see where"
