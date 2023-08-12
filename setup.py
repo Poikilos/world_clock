@@ -9,7 +9,7 @@ import os
 
 install_requires = [
     "pytz",
-    "ttkthemes",
+    "PyYAML",
 ]
 
 description = (

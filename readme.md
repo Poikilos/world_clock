@@ -22,6 +22,8 @@ systems, or Application Support for Darwin).
 - The installation has been standardized (There is a requirements.txt file and a setup.py file.
   - There is also a special setup.sh you can run afterward to get a visible icon if you have a GNU+Linux desktop.
 - The custom icon appears on the taskbar on both Windows and GNU+Linux systems.
+- The theme is now the Forest theme (included; Hierosoft python2-compatible fork; See [./worldclocktk/assets/Forest-ttk-theme/LICENSE](./worldclocktk/assets/Forest-ttk-theme/LICENSE))
+  - Therefore, the ttkthemes package is no longer required.
 
 upstream screenshot, before adding notes feature:
 ![alt text](screenshot.png)

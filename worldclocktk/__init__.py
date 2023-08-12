@@ -17,8 +17,8 @@ import shutil
 import copy
 import sys
 from datetime import datetime
-import pytz
-import yaml
+import pytz  # provided by pytz on PyPI
+import yaml  # provided by PyYAML on PyPI
 # import tkinter as tk
 
 verbosity = 0
@@ -57,22 +57,6 @@ else:
 ttkError = '''
 ERROR: Tk is not present.
  Try installing python-tk or python3-tk
-
-# If you still get an error, try:
-python3 -m pip install ttkthemes
-# See also:
-# <https://stackoverflow.com/questions/66233714/installation-of-ttk-themes-for-tkinter>
-
-'''
-
-'''
-from tkinter import ttk
-try:
-    from ttkthemes import ThemedTk
-except ImportError:
-    # python2
-    pass
-    # python3 -m pip install git+https://github.com/RedFantom/ttkthemes?
 '''
 
 if sys.version_info.major >= 3:
@@ -84,8 +68,6 @@ if sys.version_info.major >= 3:
         import tkinter as tk
         # import tkinter.ttk as ttk
         from tkinter import ttk
-        from ttkthemes import ThemedTk
-        # ^ ImportError: No module named ttkthemes (Python2 or 3)
     except ImportError as ex3:
         print()
         ttkError = str(ex3) + "\n" + ttkError
@@ -116,14 +98,15 @@ except ModuleNotFoundError as ex:
     print(str(ex))
     messagebox.showerror("Error", ttkExtError)
     # print(ttkExtError)
-    exit(1)
+    sys.exit(1)
 
 myDir = os.path.dirname(os.path.abspath(__file__))
 repoDir = os.path.dirname(myDir)
 assetsDir = os.path.join(myDir, "assets")
 iconPngPath = os.path.join(assetsDir, "clock_mini_icon.png")
 iconIcoPath = os.path.join(assetsDir, "clock_mini_icon.ico")
-
+THEMES_DIR = os.path.join(assetsDir, "Forest-ttk-theme")
+THEME_DATA_DIR = os.path.join(THEMES_DIR, "forest-light")
 autocompletions = {}
 
 
@@ -512,30 +495,24 @@ app = None
 def main():
     global root
     global app
-    if sys.version_info.major >= 3:
-        root = ThemedTk(themebg=True)
-        app = WorldClock(master=root)
-        root.set_theme('equilux')
-    else:
-        # Python 2
-        root = tk.Tk()
-        app = WorldClock(master=root)
-        app.style = ttk.Style(root)
-        names = app.style.theme_names()
-        styleI = 1
-        print("* theme names: {}".format(names))
-        app.style.theme_use(names[1])
-        print("  * using style: {}".format(names[styleI]))
-        '''
-        See <https://www.pythontutorial.net/tkinter/tkinter-theme/> but
-        they all look the same, like RedHat circa 1998, but are better
-        than setting no style which uses the old x11-style dent instead
-        of an arrow for drop-down boxes:
-        [0] clam
-        [1] alt
-        [2] default
-        [3] classic
-        '''
+    root = tk.Tk()
+    app = WorldClock(master=root)
+    app.style = ttk.Style(root)
+    root.option_add("*tearOff", False) # This is always a good idea
+
+    # Make the app responsive (from Forest ttk theme example)
+    root.columnconfigure(index=0, weight=1)
+    root.columnconfigure(index=1, weight=1)
+    root.columnconfigure(index=2, weight=1)
+    root.rowconfigure(index=0, weight=1)
+    root.rowconfigure(index=1, weight=1)
+    root.rowconfigure(index=2, weight=1)
+
+    theme_name = "forest-dark"
+
+    root.tk.call("source", os.path.join(THEMES_DIR, "%s.tcl" % theme_name))
+    root.tk.call('lappend', 'auto_path', THEMES_DIR)  # necessary if not in CWD
+    app.style.theme_use(theme_name)
 
     if platform.system() == "Windows":
         # root.iconbitmap(r'clock_mini_icon.ico')
